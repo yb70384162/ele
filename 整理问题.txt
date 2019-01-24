@@ -1,0 +1,35 @@
+1、fastclick
+ 原理: 在检测到touchend事件的时候，会通过DOM自定义事件立即出发模拟一个click事件，并把浏览器在300ms之后真正的click事件阻止掉
+缺点: 脚本相对较大
+在vue中使用???
+?```js? ??// 安装? ?
+ npm install fastclick -S? ? // 引入? ? 
+import FastClick from 'fastclick'? ? // 使用? ? FastClick.attach(document.body);? ? ```
+2、js刷新页面location.reload()用法
+注意：
+window.location.reload;
+刷新时如果提交数据的动作，则会出现对话框！
+解决
+代码示例:
+window.location.href=window.location.href; 
+window.location.reload;
+router-view 也是一个组件，如果直接被包在 keep-alive 里面，所有路径匹配到的视图组件都会被缓存：在APP.js中，
+https://www.jianshu.com/p/0b0222954483
+// routes 配置
+export default [
+  {
+    path: '/',
+    name: 'home',
+    component: Home,
+    meta: {
+      keepAlive: true // 需要被缓存
+    }
+  }, {
+    path: '/:id',
+    name: 'edit',
+    component: Edit,
+    meta: {
+      keepAlive: false // 不需要被缓存
+    }
+  }
+]
