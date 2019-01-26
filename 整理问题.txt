@@ -33,3 +33,24 @@ export default [
     }
   }
 ]
+3.Ajax请求中的async:false/true的作用
+async. 默认是true，即为异步方式，$.Ajax执行后，会继续执行ajax后面的脚本，直到服务器端返回数据后，触发$.Ajax里的success方法，这时候执行的是两个线程。若要将其设置为false，则所有的请求均为同步请求，在没有返回值之前，同步请求将锁住浏览器，用户其它操作必须等待请求完成才可以执行。
+var temp;
+  $.ajax({
+  
+     async: false,
+     type : "POST",
+     url : defaultPostData.url,
+     dataType : 'json',
+     success : function(data) 
+     {
+ 
+      temp=data; 
+   }
+ 
+ });
+ 
+alert(temp);
+这个ajax请求为同步请求，在没有返回值之前，alert(temp)是不会执行的。
+
+如果async设置为：true，则不会等待ajax请求返回的结果，会直接执行ajax后面的语句
