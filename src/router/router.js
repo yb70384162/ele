@@ -26,6 +26,14 @@ const setusername = r => require.ensure([], () => r(require('../page/profile/chi
 const address = r => require.ensure([], () => r(require('../page/profile/children/children/address')), 'address')
 const add = r => require.ensure([], () => r(require('../page/profile/children/children/children/add')), 'add')
 const addDetail = r => require.ensure([], () => r(require('../page/profile/children/children/children/children/addDetail')), 'addDetail')
+const balance = r => require.ensure([], () => r(require('../page/balance/balance')), 'balance')
+const balanceDetail = r => require.ensure([], () => r(require('../page/balance/children/detail')), 'balanceDetail')
+const benefit = r => require.ensure([], () => r(require('../page/benefit/benefit')), 'benefit')
+const coupon = r => require.ensure([], () => r(require('../page/benefit/children/coupon')), 'coupon')
+const hbDescription = r => require.ensure([], () => r(require('../page/benefit/children/hbDescription')), 'hbDescription')
+const hbHistory = r => require.ensure([], () => r(require('../page/benefit/children/hbHistory')), 'hbHistory')
+const exchange = r => require.ensure([], () => r(require('../page/benefit/children/exchange')), 'exchange')
+const commend = r => require.ensure([], () => r(require('../page/benefit/children/commend')), 'commend')
 
 export default [{
     path: '/',
@@ -143,6 +151,36 @@ export default [{
                 }]
             },]
           
+        },
+          //余额
+          {
+            path: 'balance',
+            component: balance,
+            children: [{
+                path: 'detail', //余额说明
+                component: balanceDetail,
+            }, ]
+        },
+          //我的优惠页
+          {
+            path: 'benefit',
+            component: benefit,
+            children: [{
+                path: 'coupon', //代金券说明
+                component: coupon,
+            }, {
+                path: 'hbDescription', //红包说明
+                component: hbDescription,
+            }, {
+                path: 'hbHistory', //历史红包
+                component: hbHistory,
+            }, {
+                path: 'exchange', //兑换红包
+                component: exchange,
+            }, {
+                path: 'commend', //推荐有奖
+                component: commend,
+            },]
         },
     ]
 }]

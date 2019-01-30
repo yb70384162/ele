@@ -595,4 +595,45 @@ export default new Router({
 
 嵌套路由通过配置children可实现多层嵌套，其它规则写法一样；
 --------------------- 
+9、go back与return有什么区别			
+go back回去,回到某一个地方			
+return是从A地到B地,然后强调了又从B地回到A地			
+而且return还有一个用法就是指借了东西,归还回去
 
+10、Fetch		
+Fetch获取数据	
+假设我们想通过GitHub获取一个仓库，我们可以像下面这样使用：
+	  
+fetch('https://api.github.com/users/chriscoyier/repos');
+			
+Fetch会返回Promise，所以在获取资源后，可以使用.then方法做你想做的。	  
+fetch('https://api.github.com/users/chriscoyier/repos')	  
+ .then(response => {/* do something */})
+Github返回的响应是J
+SON格式的，所以调用response.json方法来转换数据。还有其他方法来处理不同类型的响应。如果请求一个XML格式文件，则调用response.text。如果请求图片，使用response.blob方法
+	列如：	
+fetch('https://api.github.com/users/chriscoyier/repos')
+  						
+.then(response => response.json())
+  						
+.then(data => {					 
+// data就是我们请求的repos
+   						 
+console.log(data)  						
+});
+Fetch发送数据
+使用Fetch发送也很简单，只需要配置三个参数。  
+第一个参数是设置请求方法（如post、put或del），Fetch会自动设置方法为get。   
+第二个参数是设置头部。因为一般使用JSON数据格式，所以设置ContentType为application/json。  
+第三个参数是设置包含JSON内容的主体。因为JSON内容是必须的，所以当设置主体时会调用JSON.stringify。
+列如：
+let content = {some: 'content'};
+   // The actual fetch request
+	fetch('some-url', {
+  	method: 'post',
+  	headers: {
+    	'Content-Type': 'application/json'
+  					},
+  body: JSON.stringify(content)
+	})
+// .then()...
