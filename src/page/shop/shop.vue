@@ -365,6 +365,7 @@
             }
         },
         created(){
+            console.log(this.$route.query.id)
             this.geohash = this.$route.query.geohash;
             this.shopId = this.$route.query.id;
             this.INIT_BUYCART();
@@ -504,6 +505,7 @@
             },
             //加入购物车，所需7个参数，商铺id，食品分类id，食品id，食品规格id，食品名字，食品价格，食品规格
             addToCart(category_id, item_id, food_id, name, price, specs){
+                console.log(category_id, item_id, food_id, name, price, specs)
                 this.ADD_CART({shopid: this.shopId, category_id, item_id, food_id, name, price, specs});
             },
             //移出购物车，所需7个参数，商铺id，食品分类id，食品id，食品规格id，食品名字，食品价格，食品规格

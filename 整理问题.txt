@@ -637,3 +637,301 @@ let content = {some: 'content'};
   body: JSON.stringify(content)
 	})
 // .then()...
+---------------------------
+11、vue  init的方法使用  数据绑定实现逻辑
+Vue 实例在建立的时候会运行一系列的初始化操作，而在这些初始化操作里面，和数据绑定关联最大的是 initState。这个里面要说的也是比较多，有可能这次的文章里面写不全，先写这看吧。
+
+首先看 initState
+export function initState (vm: Component) {
+  vm._watchers = []
+  const opts = vm.$options
+  if (opts.props) initProps(vm, opts.props)
+  if (opts.methods) initMethods(vm, opts.methods)
+  if (opts.data) {
+    initData(vm)
+  } else {
+    observe(vm._data = {}, true /* asRootData */)
+  }
+  if (opts.computed) initComputed(vm, opts.computed)
+  if (opts.watch && opts.watch !== nativeWatch) {
+    initWatch(vm, opts.watch)
+  }
+}
+这里面主要是对 props, methods, data, computed 和 watch 进行初始化（如果还不知道这几个属性都是什么，建议先去看一下官方文档并且写几个小例子）。这些属性都是要在 Dom 渲染时获取的，自然也大都需要进行数据绑定。
+
+initProps
+function initProps (vm: Component, propsOptions: Object) {
+  const propsData = vm.$options.propsData || {}
+  const props = vm._props = {}
+  // cache prop keys so that future props updates can iterate using Array
+  // instead of dynamic object key enumeration.
+  const keys = vm.$options._propKeys = []
+  const isRoot = !vm.$parent
+  // root instance props should be converted
+  observerState.shouldConvert = isRoot
+  for (const key in propsOptions) {
+    keys.push(key)
+    const value = validateProp(key, propsOptions, propsData, vm)
+    /* istanbul ignore else */
+    if (process.env.NODE_ENV !== 'production') {
+      ......
+    } else {
+      defineReactive(props, key, value)
+    }
+    // static props are already proxied on the component's prototype
+    // during Vue.extend(). We only need to proxy props defined at
+    // instantiation here.
+    if (!(key in vm)) {
+      proxy(vm, `_props`, key)
+    }
+  }
+  observerState.shouldConvert = true
+}
+省略的地方是开发环境中为了方便调试写的代码，Vue 源码中有相当多的地方是这样写的。
+
+整体逻辑就是：
+
+把所有 prop 的 key 另存在 options 的 _propKeys 中。
+
+对于每一个 prop，将其 key 添加到 _propKeys 中，获取其 value，并执行 defineReactive 函数。
+（不了解的可以看上一节）
+对于每一个 prop, 调用 proxy 函数在 Vue 对象上建立一个该值的引用。
+
+在获取 prop 的 value 的时候调用了 validateProp 进行验证并取验证后的返回值。
+export function validateProp (
+  key: string,
+  propOptions: Object,
+  propsData: Object,
+  vm?: Component
+): any {
+  const prop = propOptions[key]
+  const absent = !hasOwn(propsData, key)
+  let value = propsData[key]
+  // handle boolean props
+  if (isType(Boolean, prop.type)) {
+    if (absent && !hasOwn(prop, 'default')) {
+      value = false
+    } else if (!isType(String, prop.type) && (value === '' || value === hyphenate(key))) {
+      value = true
+    }
+  }
+  // check default value
+  if (value === undefined) {
+    value = getPropDefaultValue(vm, prop, key)
+    // since the default value is a fresh copy,
+    // make sure to observe it.
+    const prevShouldConvert = observerState.shouldConvert
+    observerState.shouldConvert = true
+    observe(value)
+    observerState.shouldConvert = prevShouldConvert
+  }
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    // skip validation for weex recycle-list child component props
+    !(__WEEX__ && isObject(value) && ('@binding' in value))
+  ) {
+    assertProp(prop, key, value, vm, absent)
+  }
+  return value
+}
+注意，prop 验证只有在开发环境中才会进行，并且并不会影响渲染，只会发出警告。
+
+这里的工作主要是在 prop 没有传值时获取 prop 的默认值（默认值是自己设置的），并对该值执行 observe。对于布尔类型，如果没有默认值则认为默认值是 false。
+
+如果是开发环境，则会进行类型验证，这个验证是典型的根据构造函数名进行类型验证的，这个函数名获取到以后会进行字符串的比对，最近也正想自己写一个比较完善的类型验证组件，所以在这篇文章里就不详述了，免得跑题。
+
+这里多次对 observerState.shouldConvert 进行赋值，这个值的 true or false 直接决定了 Observer 是否会建立。
+
+至于这个 propsData 是什么时候取得的呢，当然是在模板编译的时候取得的。关于 prop 还有很多需要说的，有可能还要另外写一篇文章来说明。
+
+initMethod
+
+对 method 的初始化相对其他来说还是比较简单的
+function initMethods (vm: Component, methods: Object) {
+  const props = vm.$options.props
+  for (const key in methods) {
+    if (process.env.NODE_ENV !== 'production') {
+      if (methods[key] == null) {
+        warn(
+          `Method "${key}" has an undefined value in the component definition. ` +
+          `Did you reference the function correctly?`,
+          vm
+        )
+      }
+      if (props && hasOwn(props, key)) {
+        warn(
+          `Method "${key}" has already been defined as a prop.`,
+          vm
+        )
+      }
+      if ((key in vm) && isReserved(key)) {
+        warn(
+          `Method "${key}" conflicts with an existing Vue instance method. ` +
+          `Avoid defining component methods that start with _ or $.`
+        )
+      }
+    }
+    vm[key] = methods[key] == null ? noop : bind(methods[key], vm)
+  }
+}
+主要是在开发环境中检测：
+
+方法名是否为空
+方法名是否和一个 prop 冲突
+方法名是否和已有的 Vue 实例方法冲突
+另外会用 bind 将该方法的作用域绑定到 Vue 实例对象上，且创建一个在 Vue 实例对象上的引用（这点很重要）
+export function bind (fn: Function, ctx: Object): Function {
+  function boundFn (a) {
+    const l: number = arguments.length
+    return l
+      ? l > 1
+        ? fn.apply(ctx, arguments)
+        : fn.call(ctx, a)
+      : fn.call(ctx)
+  }
+  // record original fn length
+  boundFn._length = fn.length
+  return boundFn
+}
+这个 bind 是用apply 和 call 重写的 bind，据说是会比原生的 bind 要快，但是实在才学尚浅，不明白为什么。
+initData
+如果对上篇文章说到的内容比较熟悉的话，这里应该就没什么难度了。
+
+function initData (vm: Component) {
+  let data = vm.$options.data
+  data = vm._data = typeof data === 'function'
+    ? getData(data, vm)
+    : data || {}
+  if (!isPlainObject(data)) {
+    data = {}
+    process.env.NODE_ENV !== 'production' && warn(
+      'data functions should return an object:\n' +
+      'https://vuejs.org/v2/guide/components.html#data-Must-Be-a-Function',
+      vm
+    )
+  }
+  // proxy data on instance
+  const keys = Object.keys(data)
+  const props = vm.$options.props
+  const methods = vm.$options.methods
+  let i = keys.length
+  while (i--) {
+    const key = keys[i]
+    if (process.env.NODE_ENV !== 'production') {
+      if (methods && hasOwn(methods, key)) {
+        warn(
+          `Method "${key}" has already been defined as a data property.`,
+          vm
+        )
+      }
+    }
+    if (props && hasOwn(props, key)) {
+      process.env.NODE_ENV !== 'production' && warn(
+        `The data property "${key}" is already declared as a prop. ` +
+        `Use prop default value instead.`,
+        vm
+      )
+    } else if (!isReserved(key)) {
+      proxy(vm, `_data`, key)
+    }
+  }
+  // observe data
+  observe(data, true /* asRootData */)
+}
+
+
+首先会获取 data，如果 data 是函数的话，则调用 getData 获取函数的返回值。
+这里面还是在检测一些重名的问题，就不想细说了。
+这里最重要的是对 data 运行 observe 函数建立起 Observer 和钩子函数
+
+
+initComputed
+这里就比较麻烦了，由于计算属性并不是值，而是函数，并且返回值还会和一些值有关，同时还要涉及到缓存的问题，就需要一些特殊的方法进行处理了，为了避免文章太长，就放在下一篇说。
+initWatch
+说到这里就一定要补充一下之前没有说到的关于 Watcher 的问题了，先看代码，一步步往下说。
+function initWatch (vm: Component, watch: Object) {
+  for (const key in watch) {
+    const handler = watch[key]
+    if (Array.isArray(handler)) {
+      for (let i = 0; i < handler.length; i++) {
+        createWatcher(vm, key, handler[i])
+      }
+    } else {
+      createWatcher(vm, key, handler)
+    }
+  }
+}
+首先是对于每一个 watch 属性运行 createWatcher（想想也应该知道是建立一个 Watcher 对象）
+function createWatcher (
+  vm: Component,
+  keyOrFn: string | Function,
+  handler: any,
+  options?: Object
+) {
+  if (isPlainObject(handler)) {
+    options = handler
+    handler = handler.handler
+  }
+  if (typeof handler === 'string') {
+    handler = vm[handler]
+  }
+  return vm.$watch(keyOrFn, handler, options)
+}
+这里主要进行了两步预处理，代码上很好理解，主要做一些解释：
+第一步，可以理解为用户设置的 watch 有可能是一个 options 对象，如果是这样的话则取 options 中的 handler 作为回调函数。（并且将options 传入下一步的 vm.$watch）
+第二步，watch 有可能是之前定义过的 method，则获取该方法为 handler。
+下面就要看 $watch 方法了，这个方法是在 stateMixin 中定义的
+
+
+Vue.prototype.$watch = function (
+    expOrFn: string | Function,
+    cb: any,
+    options?: Object
+  ): Function {
+    const vm: Component = this
+    if (isPlainObject(cb)) {
+      return createWatcher(vm, expOrFn, cb, options)
+    }
+    options = options || {}
+    options.user = true
+    const watcher = new Watcher(vm, expOrFn, cb, options)
+    if (options.immediate) {
+      cb.call(vm, watcher.value)
+    }
+    return function unwatchFn () {
+      watcher.teardown()
+    }
+  }
+这里的逻辑是，如果 cb（就是前面的 handler）是对象的话则再运行一遍 createWatcher 进行处理，然后建立一个 Watcher 对象进行监听，如果 options 中的 immediate 为 true 则立即执行该回调函数，最后返回一个函数用来停止监听。
+接下来就要看看这个回调函数是什么时候运行的了
+
+
+run () {
+    if (this.active) {
+      const value = this.get()
+      if (
+        value !== this.value ||
+        // Deep watchers and watchers on Object/Arrays should fire even
+        // when the value is the same, because the value may
+        // have mutated.
+        isObject(value) ||
+        this.deep
+      ) {
+        // set new value
+        const oldValue = this.value
+        this.value = value
+        if (this.user) {
+          try {
+            this.cb.call(this.vm, value, oldValue)
+          } catch (e) {
+            handleError(e, this.vm, `callback for watcher "${this.expression}"`)
+          }
+        } else {
+          this.cb.call(this.vm, value, oldValue)
+        }
+      }
+    }
+  }
+再次看到 Watcher 的 run 方法，这里面判断 user 如果为 true 则运行 cb 函数，这个函数就是之前传入的 handler 回调函数， user 则在 vm.$watch 中赋值为true，其他地方建立的 Watcher 则基本都为 false，其他的几个如 lasy 等参数也是通过 options 传入的，这里就不详细说了，具体可以自己看一下代码或者官方API文档。
+结语
+到这一步为止（先不算计算属性的初始化），数据绑定的逻辑基本分析完了，这篇文章看完以后重点还是要看看 Watcher 对象的设计，可以说这个监视器设计的相当巧妙，废话不多说了，希望大家有什么见解或者分析有误的可以提出来。
