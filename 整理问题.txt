@@ -935,3 +935,60 @@ run () {
 再次看到 Watcher 的 run 方法，这里面判断 user 如果为 true 则运行 cb 函数，这个函数就是之前传入的 handler 回调函数， user 则在 vm.$watch 中赋值为true，其他地方建立的 Watcher 则基本都为 false，其他的几个如 lasy 等参数也是通过 options 传入的，这里就不详细说了，具体可以自己看一下代码或者官方API文档。
 结语
 到这一步为止（先不算计算属性的初始化），数据绑定的逻辑基本分析完了，这篇文章看完以后重点还是要看看 Watcher 对象的设计，可以说这个监视器设计的相当巧妙，废话不多说了，希望大家有什么见解或者分析有误的可以提出来。
+------------------------
+12、svg中的defs标签
+SVG 允许我们定义以后需要重复使用的图形元素。 建议把所有需要再次使用的引用元素定义在defs元素里面。这样做可以增加SVG内容的易读性和可访问性。 在defs元素中定义的图形元素不会直接呈现。 你可以在你的视口的任意地方利用 <use>元素呈现这些元素。
+--------------------------
+13、es6拓展运算符
+含义
+扩展运算符（spread）是三个点（...）。它好比 rest 参数的逆运算，将一个数组转为用逗号分隔的参数序列。
+
+console.log(...[1, 2, 3])
+// 1 2 3
+
+console.log(1, ...[2, 3, 4], 5)
+// 1 2 3 4 5
+
+[...document.querySelectorAll('div')]
+// [<div>, <div>, <div>]
+该运算符主要用于函数调用。
+
+function push(array, ...items) {
+  array.push(...items);
+}
+
+function add(x, y) {
+  return x + y;
+}
+
+const numbers = [4, 38];
+add(...numbers) // 42
+上面代码中，array.push(...items)和add(...numbers)这两行，都是函数的调用，它们的都使用了扩展运算符。该运算符将一个数组，变为参数序列。
+
+扩展运算符与正常的函数参数可以结合使用，非常灵活。
+
+function f(v, w, x, y, z) { }
+const args = [0, 1];
+f(-1, ...args, 2, ...[3]);
+扩展运算符后面还可以放置表达式。
+
+const arr = [
+  ...(x > 0 ? ['a'] : []),
+  'b',
+];
+如果扩展运算符后面是一个空数组，则不产生任何效果。
+
+[...[], 1]
+// [1]
+注意，扩展运算符如果放在括号中，JavaScript 引擎就会认为这是函数调用。如果这时不是函数调用，就会报错。
+
+(...[1, 2])
+// Uncaught SyntaxError: Unexpected number
+
+console.log((...[1, 2]))
+// Uncaught SyntaxError: Unexpected number
+
+console.log(...[1, 2])
+// 1 2
+上面前两种情况都会报错，因为扩展运算符所在的括号不是函数调用，而第三种情况console.log(...[1, 2])就不会报错，因为这时是函数调用。
+

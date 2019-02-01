@@ -314,7 +314,6 @@
         </transition>
     </div>  
 </template>
-
 <script>
   import {mapState, mapMutations} from 'vuex'
     import {msiteAddress, shopDetails, foodMenu, getRatingList, ratingScores, ratingTags} from 'src/service/getData'

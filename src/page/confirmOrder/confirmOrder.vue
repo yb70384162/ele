@@ -154,7 +154,7 @@
             }
         },
         created(){
-            console.log(this.$route.query.shopId,)
+            console.log(this.$route,)
             //获取上个页面传递过来的geohash值
             this.geohash = this.$route.query.geohash;
             //获取上个页面传递过来的shopid值

@@ -39,7 +39,11 @@ const pointsDetail = r => require.ensure([], () => r(require('../page/points/chi
 const download = r => require.ensure([], () => r(require('../page/download/download')), 'download')
 const service = r => require.ensure([], () => r(require('../page/service/service')), 'service')
 const questionDetail = r => require.ensure([], () => r(require('../page/service/children/questionDetail')), 'questionDetail')
-
+const forget = r => require.ensure([], () => r(require('../page/forget/forget')), 'forget')
+const vipcard = r => require.ensure([], () => r(require('../page/vipcard/vipcard')), 'vipcard')
+const invoiceRecord = r => require.ensure([], () => r(require('../page/vipcard/children/invoiceRecord')), 'invoiceRecord')
+const useCart = r => require.ensure([], () => r(require('../page/vipcard/children/useCart')), 'useCart')
+const vipDescription = r => require.ensure([], () => r(require('../page/vipcard/children/vipDescription')), 'vipDescription')
 
 
 export default [{
@@ -78,10 +82,10 @@ export default [{
         },
         {//
             path: '/shop',
-            component:shop
+            component: shop
         },
-          //商铺详情页
-          {
+        //商铺详情页
+        {
             path: '/shop',
             component: shop,
             children: [{
@@ -93,17 +97,17 @@ export default [{
                 children: [{
                     path: 'shopSafe', //商铺安全认证页
                     component: shopSafe,
-                }, ]
+                },]
             }]
         },
-          //订单列表页
-          {
+        //订单列表页
+        {
             path: '/order',
             component: order,
             children: [{
                 path: 'orderDetail', //订单详情页
                 component: orderDetail,
-            }, ]
+            },]
         },
         //确认订单页
         {
@@ -131,8 +135,8 @@ export default [{
                         path: 'searchAddress', //搜索地址
                         component: searchAddress,
                     }]
-                }, ]
-            }, ]
+                },]
+            },]
         },
         //个人信息页
         {
@@ -144,15 +148,15 @@ export default [{
                 children: [{
                     path: 'setusername',
                     component: setusername,
-                },{
+                }, {
                     path: 'address',
                     component: address,     //编辑地址
-                    children:[{
-                        path:'add',
-                        component:add,
-                        children:[{
-                            path:'addDetail',
-                            component:addDetail
+                    children: [{
+                        path: 'add',
+                        component: add,
+                        children: [{
+                            path: 'addDetail',
+                            component: addDetail
                         }]
                     }]
                 }]
@@ -162,17 +166,17 @@ export default [{
                 component: service,
             },]
         },
-          //余额
-          {
+        //余额
+        {
             path: 'balance',
             component: balance,
             children: [{
                 path: 'detail', //余额说明
                 component: balanceDetail,
-            }, ]
+            },]
         },
-          //我的优惠页
-          {
+        //我的优惠页
+        {
             path: 'benefit',
             component: benefit,
             children: [{
@@ -199,21 +203,41 @@ export default [{
             children: [{
                 path: 'detail', //积分说明
                 component: pointsDetail,
-            }, ]
+            },]
         },
-           //下载页
-           {
+        //下载页
+        {
             path: '/download',
             component: download
         },
-            //服务中心
-            {
-                path: '/service',
-                component: service,
-                 children: [{
-                    path: 'questionDetail', //订单详情页
-                    component: questionDetail,
-                }, ]
-            },
+        //服务中心
+        {
+            path: '/service',
+            component: service,
+            children: [{
+                path: 'questionDetail', //订单详情页
+                component: questionDetail,
+            },]
+        },
+        //修改密码页
+        {
+            path: '/forget',
+            component: forget
+        },
+        //vip卡页
+        {
+            path: '/vipcard',
+            component: vipcard,
+            children: [{
+                path: 'invoiceRecord', //开发票
+                component: invoiceRecord,
+            }, {
+                path: 'useCart', //购买会员卡
+                component: useCart,
+            }, {
+                path: 'vipDescription', //会员说明
+                component: vipDescription,
+            },]
+        },
     ]
 }]
